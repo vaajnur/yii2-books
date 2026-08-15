@@ -1,0 +1,40 @@
+services:
+  php:
+    image: yiisoftware/yii2-php:8.5-apache-latest
+    volumes:
+      - ~/.composer-docker/cache:/root/.composer/cache:delegated
+      - ./:/app:delegated
+    ports:
+      - '8000:80'
+    environment:
+      DB_DSN: mysql:host=db;dbname=book_catalog
+      DB_USER: catalog
+      DB_PASSWORD: catalog
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: [
+        "CMD-SHELL",
+        "if [ \"$(stat -c '%U' /app/runtime)\" != 'www-data' ] || [ \"$(stat -c '%U' /app/web/assets)\" != 'www-data' ]; then chown -R www-data:www-data /app/runtime /app/web/assets && chmod -R ug+rwX /app/runtime /app/web/assets; fi && runuser -u www-data -- touch /app/runtime/test_write && rm /app/runtime/test_write && exit 0 || exit 1",
+      ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+  db:
+    image: mariadb:11.4
+    environment:
+      MARIADB_DATABASE: book_catalog
+      MARIADB_USER: catalog
+      MARIADB_PASSWORD: catalog
+      MARIADB_ROOT_PASSWORD: root
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+volumes:
+  db-data:

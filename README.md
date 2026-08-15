@@ -1,0 +1,31 @@
+# Каталог книг на Yii2
+
+Каталог книг с несколькими авторами, загрузкой обложек, подписками на конкретного автора и публичным отчётом ТОП-10 авторов за выбранный год.
+
+## Запуск через Docker
+
+```bash
+docker compose up -d
+docker compose exec php php yii migrate --interactive=0
+```
+
+Приложение: http://localhost:8000. Демо-вход для управления каталогом: `admin` / `admin` (также доступен `demo` / `demo`). Учётные записи демонстрационные; для production подключите собственное хранилище пользователей.
+
+## Локальный запуск
+
+Требуются PHP 8.2+, MySQL/MariaDB и Composer.
+
+```bash
+composer install
+mysql -u root -e 'CREATE DATABASE book_catalog CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci'
+php yii migrate
+php yii serve
+```
+
+Подключение настраивается переменными `DB_DSN`, `DB_USER`, `DB_PASSWORD`. Письма по умолчанию сохраняются в `runtime/mail`; SMTP можно настроить в `config/web.php`.
+
+## Права
+
+- Гость: каталог, карточки книг и авторов, отчёт, подписка email на конкретного автора.
+- Авторизованный пользователь: всё перечисленное плюс CRUD книг и авторов.
+- Удаление автора каскадно удаляет связи и подписки, но не сами книги.
