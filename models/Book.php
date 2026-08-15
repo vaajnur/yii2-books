@@ -11,7 +11,8 @@ use yii\web\UploadedFile;
 class Book extends ActiveRecord
 {
     public array $authorIds = [];
-    public ?UploadedFile $coverFile = null;
+    /** @var UploadedFile|string|null Загружаемый файл; до getInstance() Yii может присвоить пустую строку. */
+    public $coverFile = null;
     public static function tableName(): string { return '{{%book}}'; }
     public function behaviors(): array { return [TimestampBehavior::class]; }
     public function rules(): array
@@ -32,7 +33,14 @@ class Book extends ActiveRecord
     {
         if (!$this->coverFile) return true;
         $directory = Yii::getAlias('@webroot/uploads/covers');
-        if (!is_dir($directory) && !mkdir($directory, 0775, true) && !is_dir($directory)) return false;
+        if (!is_dir($directory) && !@mkdir($directory, 0775, true) && !is_dir($directory)) {
+            $this->addError('coverFile', 'Каталог обложек недоступен для записи. Проверьте права web/uploads.');
+            return false;
+        }
+        if (!is_writable($directory)) {
+            $this->addError('coverFile', 'Каталог обложек недоступен для записи. Проверьте права web/uploads.');
+            return false;
+        }
         $old = $this->cover; $this->cover = Yii::$app->security->generateRandomString(20) . '.' . $this->coverFile->extension;
         if (!$this->coverFile->saveAs($directory . '/' . $this->cover)) { $this->cover = $old; return false; }
         if ($old && is_file($directory . '/' . $old)) @unlink($directory . '/' . $old);

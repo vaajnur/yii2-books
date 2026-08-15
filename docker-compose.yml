@@ -1,9 +1,11 @@
 services:
   php:
     image: yiisoftware/yii2-php:8.5-apache-latest
+    entrypoint: ["/bin/sh", "/app/docker/entrypoint.sh"]
     volumes:
       - ~/.composer-docker/cache:/root/.composer/cache:delegated
       - ./:/app:delegated
+      - book-covers:/app/web/uploads
     ports:
       - '8000:80'
     environment:
@@ -16,7 +18,7 @@ services:
     healthcheck:
       test: [
         "CMD-SHELL",
-        "if [ \"$(stat -c '%U' /app/runtime)\" != 'www-data' ] || [ \"$(stat -c '%U' /app/web/assets)\" != 'www-data' ]; then chown -R www-data:www-data /app/runtime /app/web/assets && chmod -R ug+rwX /app/runtime /app/web/assets; fi && runuser -u www-data -- touch /app/runtime/test_write && rm /app/runtime/test_write && exit 0 || exit 1",
+        "runuser -u www-data -- touch /app/runtime/test_write /app/web/uploads/test_write && rm /app/runtime/test_write /app/web/uploads/test_write && exit 0 || exit 1",
       ]
       interval: 30s
       timeout: 10s
@@ -38,3 +40,4 @@ services:
       retries: 20
 volumes:
   db-data:
+  book-covers:
