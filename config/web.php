@@ -49,6 +49,11 @@ $config = [
             ],
         ],
         'db' => $db,
+        'smsPilot' => [
+            'class' => \app\services\SmsPilotClient::class,
+            'apiKey' => getenv('SMSPILOT_API_KEY') ?: 'XXXXXXXXXXXXYYYYYYYYYYYYZZZZZZZZXXXXXXXXXXXXYYYYYYYYYYYYZZZZZZZZ',
+            'sender' => getenv('SMSPILOT_SENDER') ?: '',
+        ],
         /*
         'urlManager' => [
             'enablePrettyUrl' => true,

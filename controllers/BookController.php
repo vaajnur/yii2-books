@@ -53,11 +53,10 @@ class BookController extends Controller
     }
     private function notifySubscribers(Book $book): void
     {
-        $emails = (new \yii\db\Query())->select('email')->distinct()->from('{{%subscription}}')->where(['author_id' => $book->authorIds])->column();
-        if (!$emails) return;
-        foreach ($emails as $email) {
-            try { Yii::$app->mailer->compose()->setTo($email)->setSubject('Новая книга: ' . $book->title)->setTextBody("В каталог добавлена книга «{$book->title}» ({$book->publication_year}).")->send(); }
-            catch (\Throwable $e) { Yii::warning('Не удалось отправить уведомление на ' . $email . ': ' . $e->getMessage(), __METHOD__); }
+        $phones = (new \yii\db\Query())->select('phone')->distinct()->from('{{%subscription}}')->where(['author_id' => $book->authorIds])->andWhere(['not', ['phone' => null]])->column();
+        foreach ($phones as $phone) {
+            try { Yii::$app->smsPilot->send($phone, "Новая книга «{$book->title}» ({$book->publication_year}) появилась в каталоге."); }
+            catch (\Throwable $e) { Yii::warning('Не удалось отправить SMS на ' . $phone . ': ' . $e->getMessage(), __METHOD__); }
         }
     }
     public function actionDelete(int $id)

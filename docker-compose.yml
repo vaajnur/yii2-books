@@ -12,6 +12,8 @@ services:
       DB_DSN: mysql:host=db;dbname=book_catalog
       DB_USER: catalog
       DB_PASSWORD: catalog
+      SMSPILOT_API_KEY: ${SMSPILOT_API_KEY:-XXXXXXXXXXXXYYYYYYYYYYYYZZZZZZZZXXXXXXXXXXXXYYYYYYYYYYYYZZZZZZZZ}
+      SMSPILOT_SENDER: ${SMSPILOT_SENDER:-}
     depends_on:
       db:
         condition: service_healthy
